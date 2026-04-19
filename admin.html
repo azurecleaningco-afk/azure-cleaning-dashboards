@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azure Cleaning - Admin Dashboard</title>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #0F766E;
+            --primary-light: #14B8A6;
+            --primary-dark: #0D5A52;
+            --accent: #06B6D4;
+            --secondary: #64748B;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --background: #F8FAFC;
+            --surface: #FFFFFF;
+            --border: #E2E8F0;
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-muted: #94A3B8;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 32px 40px;
+            box-shadow: 0 4px 20px rgba(15, 118, 110, 0.15);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
+        }
+        
+        .header-left p {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+        
+        .header-stats {
+            display: flex;
+            gap: 32px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px 20px;
+        }
+        
+        .auth-card {
+            background: var(--surface);
+            border: 2px solid var(--accent);
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 32px;
+            text-align: center;
+            box-shadow: 0 2px 12px rgba(6, 182, 212, 0.1);
+        }
+        
+        .auth-card h3 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+        
+        .auth-card p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+        
+        .btn-auth {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.2);
+        }
+        
+        .btn-auth:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(15, 118, 110, 0.3);
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 28px;
+            border-bottom: 2px solid var(--border);
+            overflow-x: auto;
+            padding-bottom: 0;
+        }
+        
+        .tab-btn {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .tab-btn:hover {
+            color: var(--primary);
+        }
+        
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .section {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border);
+        }
+        
+        .section h2 {
+            font-size: 20px;
+            margin-bottom: 24px;
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(15, 118, 110, 0.05) 0%, rgba(20, 184, 166, 0.05) 100%);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .stat-card h3 {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: var(--background);
+            border-bottom: 2px solid var(--border);
+        }
+        
+        th {
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+        
+        tbody tr:hover {
+            background: var(--background);
+        }
+        
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-active {
+            background: rgba(16, 185, 129, 0.1);
+            color: #047857;
+        }
+        
+        .status-available {
+            background: rgba(6, 182, 212, 0.1);
+            color: #0891B2;
+        }
+        
+        .status-accepted {
+            background: rgba(16, 185, 129, 0.1);
+            color: #047857;
+        }
+        
+        .status-completed {
+            background: rgba(16, 185, 129, 0.1);
+            color: #047857;
+        }
+        
+        .status-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: #92400E;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-muted);
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px 24px;
+            color: var(--text-secondary);
+        }
+        
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+            animation: pulse 1.5s ease-in-out infinite;
+            margin-left: 8px;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(15, 118, 110, 0.2);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
+        }
+        
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+        
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+        
+        .success-message {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-left: 4px solid var(--success);
+            color: #047857;
+            padding: 14px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .header-stats {
+                width: 100%;
+                justify-content: space-around;
+                gap: 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                overflow-x: auto;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            td, th {
+                padding: 10px 8px;
+            }
+            
+            .stat-card {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1>Azure Cleaning</h1>
+                <p>Admin Dashboard • Crystal Clear Spaces</p>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="totalClients">—</span>
+                    <span class="stat-label">Clients</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="activeJobs">—</span>
+                    <span class="stat-label">Active Jobs</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="totalCleaners">—</span>
+                    <span class="stat-label">Cleaners</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="weeklyRevenue">$—</span>
+                    <span class="stat-label">This Week</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- AUTH MESSAGE -->
+        <div class="auth-card">
+            <h3>🔐 Authorize Access to Your Google Sheet</h3>
+            <p>Click below to connect to your Azure Cleaning data. You'll only need to do this once.</p>
+            <button class="btn-auth" onclick="handleAuthClick()">Sign In with Google</button>
+        </div>
+        
+        <!-- TABS -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+            <button class="tab-btn" onclick="switchTab('clients')">👥 Clients</button>
+            <button class="tab-btn" onclick="switchTab('jobs')">📅 Jobs</button>
+            <button class="tab-btn" onclick="switchTab('cleaners')">🧹 Cleaners</button>
+            <button class="tab-btn" onclick="switchTab('payments')">💰 Payments</button>
+        </div>
+        
+        <!-- TAB 1: DASHBOARD -->
+        <div id="dashboard" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Clients</h3>
+                    <div class="number" id="stat-clients">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Jobs</h3>
+                    <div class="number" id="stat-jobs">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Team Cleaners</h3>
+                    <div class="number" id="stat-cleaners">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Weekly Revenue</h3>
+                    <div class="number" id="stat-revenue">$0</div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Recent Jobs</h2>
+                <div id="recentJobsList" class="table-container">
+                    <div class="loading">Loading your data</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB 2: CLIENTS -->
+        <div id="clients" class="tab-content">
+            <div class="section">
+                <h2>Your Clients</h2>
+                <div id="clientsTable" class="table-container">
+                    <div class="loading">Loading clients</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB 3: JOBS -->
+        <div id="jobs" class="tab-content">
+            <div class="section">
+                <h2>All Jobs</h2>
+                <div id="jobsTable" class="table-container">
+                    <div class="loading">Loading jobs</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB 4: CLEANERS -->
+        <div id="cleaners" class="tab-content">
+            <div class="section">
+                <h2>Your Team</h2>
+                <div id="cleanersTable" class="table-container">
+                    <div class="loading">Loading team members</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB 5: PAYMENTS -->
+        <div id="payments" class="tab-content">
+            <div class="section">
+                <h2>Payments & 1099 Tracking</h2>
+                <div id="paymentsTable" class="table-container">
+                    <div class="loading">Loading payment data</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ============================================
+        // GOOGLE SHEETS API CONFIGURATION
+        // ============================================
+        
+        const SHEET_ID = '1PU1cC7ff3H-6AUNRn9s1oQZRV9jfZLKITxfSTXjTu7w';
+        const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
+        const CLIENT_ID = '1234567890-abcdefg.apps.googleusercontent.com'; // Replace with your actual CLIENT_ID
+        const API_KEY = 'AIzaSyDOcnhWJ5z5X3H5b5ZvZ5Z5Z5Z5Z5Z5Z5Z'; // Replace with your actual API_KEY
+        
+        let tokenClient;
+        let gapiInited = false;
+        let gisInited = false;
+        
+        // Initialize Google API
+        function initializeGoogleAPI() {
+            console.log('Initializing Google API...');
+            gapi.load('client', async () => {
+                try {
+                    await gapi.client.init({
+                        apiKey: API_KEY,
+                        discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
+                        scopes: SCOPES
+                    });
+                    gapiInited = true;
+                    console.log('GAPI initialized');
+                } catch (error) {
+                    console.error('Error initializing GAPI:', error);
+                }
+            });
+            
+            window.google.accounts.id.initialize({
+                client_id: CLIENT_ID,
+                callback: handleCredentialResponse
+            });
+            
+            tokenClient = window.google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: ''
+            });
+            gisInited = true;
+        }
+        
+        function handleAuthClick() {
+            tokenClient.callback = async (resp) => {
+                if (resp.error !== undefined) {
+                    throw (resp);
+                }
+                console.log('Auth successful, loading data...');
+                loadAllData();
+            };
+            
+            if (gapi.client.getToken() === null) {
+                tokenClient.requestAccessToken({prompt: 'consent'});
+            } else {
+                tokenClient.requestAccessToken({prompt: ''});
+            }
+        }
+        
+        // ============================================
+        // READ DATA FROM GOOGLE SHEETS
+        // ============================================
+        
+        async function readSheet(sheetName) {
+            try {
+                const response = await gapi.client.sheets.spreadsheets.values.get({
+                    spreadsheetId: SHEET_ID,
+                    range: `'${sheetName}'`
+                });
+                return response.result.values || [];
+            } catch (err) {
+                console.error(`Error reading ${sheetName}:`, err);
+                return [];
+            }
+        }
+        
+        async function loadAllData() {
+            const clients = await readSheet('Client Profiles');
+            const jobs = await readSheet('Job Schedule');
+            const cleaners = await readSheet('Cleaner Profiles');
+            const payments = await readSheet('Payment Tracker');
+            
+            displayDashboard(clients, jobs, cleaners);
+            displayClients(clients);
+            displayJobs(jobs, clients);
+            displayCleaners(cleaners);
+            displayPayments(payments, cleaners);
+        }
+        
+        // ============================================
+        // DISPLAY DATA
+        // ============================================
+        
+        function displayDashboard(clients, jobs, cleaners) {
+            const clientData = clients.slice(1).filter(row => row[0]);
+            const jobData = jobs.slice(1).filter(row => row[0]);
+            const cleanerData = cleaners.slice(1).filter(row => row[0]);
+            
+            const activeJobs = jobData.filter(j => j[10] && j[10].toLowerCase() !== 'completed').length;
+            
+            document.getElementById('totalClients').textContent = clientData.length;
+            document.getElementById('activeJobs').textContent = activeJobs;
+            document.getElementById('totalCleaners').textContent = cleanerData.length;
+            
+            document.getElementById('stat-clients').textContent = clientData.length;
+            document.getElementById('stat-jobs').textContent = activeJobs;
+            document.getElementById('stat-cleaners').textContent = cleanerData.length;
+            
+            const recentJobs = jobData.slice(-5).reverse();
+            const jobsHtml = recentJobs.length > 0 ? `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Job ID</th>
+                            <th>Client</th>
+                            <th>Date</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Pay</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${recentJobs.map(job => `
+                            <tr>
+                                <td><strong>${job[0] || '—'}</strong></td>
+                                <td>${job[1] || '—'}</td>
+                                <td>${job[4] || '—'}</td>
+                                <td>${job[3] || '—'}</td>
+                                <td><span class="status-badge status-${(job[10] || 'available').toLowerCase()}">${job[10] || 'Available'}</span></td>
+                                <td>$${parseFloat(job[9] || 0).toFixed(2)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            ` : '<div class="empty-state"><div class="empty-state-icon">📭</div><p>No jobs yet. Create your first job to get started!</p></div>';
+            
+            document.getElementById('recentJobsList').innerHTML = jobsHtml;
+        }
+        
+        function displayClients(clients) {
+            const clientData = clients.slice(1).filter(row => row[0]);
+            const html = clientData.length > 0 ? `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>City</th>
+                            <th>Frequency</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${clientData.map(client => `
+                            <tr>
+                                <td><strong>${client[0] || '—'}</strong></td>
+                                <td>${client[2] || '—'}</td>
+                                <td>${client[1] || '—'}</td>
+                                <td>${client[4] || '—'}</td>
+                                <td>${client[5] || '—'}</td>
+                                <td>$${parseFloat(client[6] || 0).toFixed(2)}</td>
+                                <td><span class="status-badge status-active">${client[8] || 'Active'}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            ` : '<div class="empty-state"><div class="empty-state-icon">👤</div><p>No clients yet</p></div>';
+            
+            document.getElementById('clientsTable').innerHTML = html;
+        }
+        
+        function displayJobs(jobs, clients) {
+            const jobData = jobs.slice(1).filter(row => row[0]);
+            const html = jobData.length > 0 ? `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Job ID</th>
+                            <th>Client</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Location</th>
+                            <th>Pay</th>
+                            <th>Cleaner</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${jobData.map(job => `
+                            <tr>
+                                <td><strong>${job[0] || '—'}</strong></td>
+                                <td>${job[1] || '—'}</td>
+                                <td>${job[4] || '—'}</td>
+                                <td>${job[5] || '—'}</td>
+                                <td>${job[3] || '—'}</td>
+                                <td>$${parseFloat(job[9] || 0).toFixed(2)}</td>
+                                <td>${job[10] || '—'}</td>
+                                <td><span class="status-badge status-${(job[11] || 'available').toLowerCase()}">${job[11] || 'Available'}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            ` : '<div class="empty-state"><div class="empty-state-icon">📅</div><p>No jobs yet</p></div>';
+            
+            document.getElementById('jobsTable').innerHTML = html;
+        }
+        
+        function displayCleaners(cleaners) {
+            const cleanerData = cleaners.slice(1).filter(row => row[0]);
+            const html = cleanerData.length > 0 ? `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Service Areas</th>
+                            <th>Commission</th>
+                            <th>MTD Earned</th>
+                            <th>YTD Earned</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${cleanerData.map(cleaner => `
+                            <tr>
+                                <td><strong>${cleaner[0] || '—'}</strong></td>
+                                <td>${cleaner[1] || '—'}</td>
+                                <td>${cleaner[3] || '—'}</td>
+                                <td>${cleaner[5] || '55%'}</td>
+                                <td>$${parseFloat(cleaner[6] || 0).toFixed(2)}</td>
+                                <td>$${parseFloat(cleaner[7] || 0).toFixed(2)}</td>
+                                <td><span class="status-badge status-active">${cleaner[4] || 'Active'}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            ` : '<div class="empty-state"><div class="empty-state-icon">👷</div><p>No team members yet</p></div>';
+            
+            document.getElementById('cleanersTable').innerHTML = html;
+        }
+        
+        function displayPayments(payments, cleaners) {
+            const cleanerData = cleaners.slice(1).filter(row => row[0]);
+            const html = cleanerData.length > 0 ? `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cleaner</th>
+                            <th>SSN (Last 4)</th>
+                            <th>YTD Earned</th>
+                            <th>Needs 1099?</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${cleanerData.map(cleaner => {
+                            const ytdEarned = parseFloat(cleaner[7] || 0);
+                            const needs1099 = ytdEarned >= 600 ? 'Yes' : 'No';
+                            return `
+                                <tr>
+                                    <td><strong>${cleaner[0]}</strong></td>
+                                    <td>XXX-XX-${cleaner[8] || '0000'}</td>
+                                    <td>$${ytdEarned.toFixed(2)}</td>
+                                    <td>${needs1099}</td>
+                                    <td><span class="status-badge status-${needs1099 === 'Yes' ? 'pending' : 'completed'}">${needs1099 === 'Yes' ? 'Pending' : 'Not Required'}</span></td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            ` : '<div class="empty-state"><div class="empty-state-icon">💰</div><p>No payment data yet</p></div>';
+            
+            document.getElementById('paymentsTable').innerHTML = html;
+        }
+        
+        // ============================================
+        // TAB SWITCHING
+        // ============================================
+        
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        // ============================================
+        // INITIALIZE
+        // ============================================
+        
+        window.addEventListener('load', initializeGoogleAPI);
+    </script>
+</body>
+</html>
