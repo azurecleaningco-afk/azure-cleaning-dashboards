@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azure Cleaning - Cleaner Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #0F766E;
+            --primary-light: #14B8A6;
+            --success: #10B981;
+            --danger: #EF4444;
+            --background: #F8FAFC;
+            --surface: #FFFFFF;
+            --border: #E2E8F0;
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-muted: #94A3B8;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 28px 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 28px 20px;
+        }
+        
+        .login-section {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        
+        .login-section h2 {
+            font-size: 22px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            max-width: 300px;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+        }
+        
+        .login-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.2);
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-left: 4px solid var(--danger);
+            color: #991b1b;
+            padding: 12px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .error-message.show {
+            display: block;
+        }
+        
+        .jobs-section {
+            display: none;
+        }
+        
+        .jobs-section.active {
+            display: block;
+        }
+        
+        .cleaner-header {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .cleaner-info h2 {
+            font-size: 20px;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+        
+        .logout-btn {
+            padding: 10px 20px;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .jobs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        
+        .job-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+        
+        .job-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(15, 118, 110, 0.12);
+            border-color: var(--primary);
+        }
+        
+        .job-id {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        
+        .job-card h3 {
+            margin-bottom: 16px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        .job-detail {
+            margin-bottom: 12px;
+            display: flex;
+            gap: 12px;
+        }
+        
+        .job-label {
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 600;
+            min-width: 90px;
+            text-transform: uppercase;
+        }
+        
+        .job-value {
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+        
+        .job-pay {
+            background: rgba(15, 118, 110, 0.1);
+            border-left: 4px solid var(--primary);
+            padding: 14px;
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+        
+        .job-pay-label {
+            color: var(--text-secondary);
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        
+        .job-pay-amount {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .accept-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 16px;
+            box-shadow: 0 2px 8px rgba(15, 118, 110, 0.2);
+        }
+        
+        .accept-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .no-jobs {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 48px 20px;
+            text-align: center;
+            border: 1px solid var(--border);
+            grid-column: 1 / -1;
+        }
+        
+        .loading {
+            text-align: center;
+            color: var(--text-secondary);
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Azure Cleaning</h1>
+        <p>Available Jobs • Professional Cleaning Services</p>
+    </div>
+    
+    <div class="container">
+        <div class="login-section" id="loginSection">
+            <h2>Welcome to Azure Cleaning</h2>
+            <p style="margin-bottom: 20px; color: var(--text-secondary);">Enter your name to see available jobs</p>
+            
+            <div id="errorMessage" class="error-message"></div>
+            
+            <div class="form-group">
+                <label>Your Name</label>
+                <input type="text" id="cleanerName" placeholder="Enter your full name">
+            </div>
+            
+            <button class="login-btn" onclick="loginCleaner()">Sign In</button>
+        </div>
+        
+        <div class="jobs-section" id="jobsSection">
+            <div class="cleaner-header">
+                <div class="cleaner-info">
+                    <h2 id="cleanerGreeting">Welcome!</h2>
+                    <p id="cleanerArea">Service Areas: Loading...</p>
+                </div>
+                <button class="logout-btn" onclick="logout()">Sign Out</button>
+            </div>
+            
+            <div class="jobs-grid" id="jobsGrid">
+                <div class="no-jobs loading">Loading your jobs...</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const SHEET_ID = '1PU1cC7ff3H-6AUNRn9s1oQZRV9jfZLKITxfSTXjTu7w';
+        let cleanersData = [];
+        let jobsData = [];
+        
+        async function loadSheetData() {
+            try {
+                // Load cleaner profiles using Google Sheets public CSV export
+                const cleanerUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Cleaner%20Profiles`;
+                const cleanerResponse = await fetch(cleanerUrl);
+                const cleanerCsv = await cleanerResponse.text();
+                cleanersData = parseCSV(cleanerCsv);
+                
+                // Load jobs using Google Sheets public CSV export
+                const jobUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Job%20Schedule`;
+                const jobResponse = await fetch(jobUrl);
+                const jobCsv = await jobResponse.text();
+                jobsData = parseCSV(jobCsv);
+                
+                return true;
+            } catch (error) {
+                console.error('Error loading data:', error);
+                return false;
+            }
+        }
+        
+        function parseCSV(csv) {
+            const lines = csv.trim().split('\n');
+            return lines.map(line => {
+                const regex = /("([^"]*)"|[^,]+)/g;
+                const match = [];
+                let m;
+                while ((m = regex.exec(line)) !== null) {
+                    match.push(m[2] || m[1]);
+                }
+                return match;
+            });
+        }
+        
+        async function loginCleaner() {
+            const name = document.getElementById('cleanerName').value.trim();
+            const errorMessage = document.getElementById('errorMessage');
+            
+            if (!name) {
+                errorMessage.textContent = '❌ Please enter your name';
+                errorMessage.classList.add('show');
+                return;
+            }
+            
+            // Load data if not already loaded
+            if (cleanersData.length === 0) {
+                const loaded = await loadSheetData();
+                if (!loaded) {
+                    errorMessage.textContent = '❌ Error loading data. Please try again.';
+                    errorMessage.classList.add('show');
+                    return;
+                }
+            }
+            
+            // Find cleaner by name
+            const cleaner = cleanersData.slice(1).find(row => 
+                row[0] && row[0].toLowerCase().includes(name.toLowerCase())
+            );
+            
+            if (!cleaner) {
+                errorMessage.textContent = '❌ Name not found. Check your spelling.';
+                errorMessage.classList.add('show');
+                return;
+            }
+            
+            // Store cleaner info
+            localStorage.setItem('cleanerName', cleaner[0]);
+            localStorage.setItem('cleanerAreas', cleaner[3]);
+            
+            // Show jobs section
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('jobsSection').classList.add('active');
+            
+            document.getElementById('cleanerGreeting').textContent = `Hi ${cleaner[0]}! 👋`;
+            document.getElementById('cleanerArea').textContent = `Service Areas: ${cleaner[3]}`;
+            
+            loadAvailableJobs(cleaner[0], cleaner[3]);
+        }
+        
+        function loadAvailableJobs(cleanerName, serviceAreas) {
+            const areas = serviceAreas.split(',').map(a => a.trim().toLowerCase());
+            const availableJobs = jobsData.slice(1).filter(job => {
+                if (!job[3]) return false;
+                return areas.some(area => job[3].toLowerCase().includes(area));
+            });
+            
+            const jobsGrid = document.getElementById('jobsGrid');
+            
+            if (availableJobs.length === 0) {
+                jobsGrid.innerHTML = '<div class="no-jobs"><p>No available jobs in your service area right now.</p></div>';
+                return;
+            }
+            
+            jobsGrid.innerHTML = availableJobs.map(job => `
+                <div class="job-card">
+                    <div class="job-id">${job[0]}</div>
+                    <h3>${job[1]}</h3>
+                    
+                    <div class="job-detail">
+                        <span class="job-label">📍 Address</span>
+                        <span class="job-value">${job[2]}</span>
+                    </div>
+                    
+                    <div class="job-detail">
+                        <span class="job-label">📅 Date</span>
+                        <span class="job-value">${job[4]}</span>
+                    </div>
+                    
+                    <div class="job-detail">
+                        <span class="job-label">⏰ Time</span>
+                        <span class="job-value">${job[5]}</span>
+                    </div>
+                    
+                    <div class="job-detail">
+                        <span class="job-label">🔄 Type</span>
+                        <span class="job-value">${job[6]}</span>
+                    </div>
+                    
+                    <div class="job-pay">
+                        <div class="job-pay-label">Your Pay (55%)</div>
+                        <div class="job-pay-amount">$${parseFloat(job[7] || 0).toFixed(2)}</div>
+                    </div>
+                    
+                    <button class="accept-btn" onclick="acceptJob('${job[0]}', '${job[1]}')">
+                        Accept This Job
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        function acceptJob(jobId, clientName) {
+            if (confirm(`Accept job from ${clientName}?`)) {
+                alert(`✓ Job ${jobId} accepted!\n\nAzure Cleaning will send you a confirmation email.`);
+            }
+        }
+        
+        function logout() {
+            if (confirm('Sign out?')) {
+                localStorage.removeItem('cleanerName');
+                localStorage.removeItem('cleanerAreas');
+                document.getElementById('jobsSection').classList.remove('active');
+                document.getElementById('loginSection').classList.remove('hidden');
+                document.getElementById('cleanerName').value = '';
+            }
+        }
+        
+        window.addEventListener('load', async () => {
+            const cleanerName = localStorage.getItem('cleanerName');
+            if (cleanerName) {
+                await loadSheetData();
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('jobsSection').classList.add('active');
+                document.getElementById('cleanerGreeting').textContent = `Hi ${cleanerName}! 👋`;
+                document.getElementById('cleanerArea').textContent = `Service Areas: ${localStorage.getItem('cleanerAreas')}`;
+            }
+        });
+    </script>
+</body>
+</html>
